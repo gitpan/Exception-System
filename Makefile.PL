@@ -8,9 +8,10 @@ WriteMakefile (
     dist            => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     PMLIBDIRS       => [ 'lib' ],
     PREREQ_PM       => {
-        'Exception::Base'       => 0.02,
+        'Exception::Base'       => 0.03,
         'Test::Unit'            => 0, 
     },
     AUTHOR          => 'Piotr Roszatycki <dexter@debian.org>',
-    ABSTRACT        => 'Exception class for system or library calls'
+    ABSTRACT        => 'Exception class for system or library calls',
+    NO_META         => 1,
 );

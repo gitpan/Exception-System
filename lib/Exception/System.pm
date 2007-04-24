@@ -1,7 +1,7 @@
 #!/usr/bin/perl -c
 
 package Exception::System;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 NAME
 
@@ -34,6 +34,7 @@ the error message and error codes.
 =cut
 
 
+require 5.006;
 use strict;
 
 
@@ -103,13 +104,13 @@ sub stringify {
 1;
 
 
-=head1 BASE CLASSES
+=head1 REQUIRES
 
 =over
 
-=item Exception::Base
+=item *
 
-The class is derived of Exception::Base class.
+L<Exception::Base>
 
 =back
 
@@ -197,7 +198,7 @@ If you find the bug, please report it.
 
 Piotr Roszatycki E<lt>dexter@debian.orgE<gt>
 
-=head1 COPYRIGHT
+=head1 LICENSE
 
 Copyright 2007 by Piotr Roszatycki E<lt>dexter@debian.orgE<gt>.
 

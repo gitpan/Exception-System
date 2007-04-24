@@ -22,7 +22,7 @@ DESCRIPTION
     errors.  The additional fields of the exception object are filled on
     throw and contain the error message and error codes.
 
-COPYRIGHT
+LICENSE
     Copyright 2007 by Piotr Roszatycki <dexter@debian.org>.
 
     This program is free software; you can redistribute it and/or modify it

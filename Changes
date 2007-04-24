@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+0.03 | Piotr Roszatycki <dexter@debian.org> | 2007-04-24
+
+* require 5.006
+* META.yml created by hand.
+
+------------------------------------------------------------------------
 0.02 | Piotr Roszatycki <dexter@debian.org> | 2007-04-22
 
 * First CPAN release.
