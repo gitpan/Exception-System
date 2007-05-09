@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+0.04 | Piotr Roszatycki <dexter@debian.org> | 2007-05-09
+
+* use 5.006
+* Test with bundled Unit::Test::Lite, so there is no dependency on
+  Unit::Test.
+* META.yml is generated with Makefile.PL.
+
+------------------------------------------------------------------------
 0.03 | Piotr Roszatycki <dexter@debian.org> | 2007-04-24
 
 * require 5.006

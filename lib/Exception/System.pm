@@ -1,7 +1,8 @@
 #!/usr/bin/perl -c
 
 package Exception::System;
-our $VERSION = '0.03';
+use 5.006;
+our $VERSION = '0.04';
 
 =head1 NAME
 
@@ -34,7 +35,6 @@ the error message and error codes.
 =cut
 
 
-require 5.006;
 use strict;
 
 
@@ -73,7 +73,7 @@ sub _collect_system_data {
         $self->{errstr} = "$!";   # string context
         $self->{errstros} = $^E;
         $self->{errno} = 0+$!;    # numeric context
-        $self->{errname} = $Errname{ $self->{errno} };
+        $self->{errname} = $Errname{ $self->{errno} } || '';
     }
 
     return $self;
@@ -104,13 +104,13 @@ sub stringify {
 1;
 
 
-=head1 REQUIRES
+=head1 PREREQUISITIES
 
 =over
 
 =item *
 
-L<Exception::Base>
+L<Exception::Base> >= 0.03
 
 =back
 

@@ -45,6 +45,7 @@ sub test_Exception_System_collect_system_data {
         $self->assert_null($obj->{errname});
         $self->assert_null($obj->{errno});
         
+        eval { 1; };
         $obj->_collect_system_data;
         $self->assert_not_null($obj->{errstr});
         $self->assert_not_null($obj->{errstros});
@@ -52,6 +53,7 @@ sub test_Exception_System_collect_system_data {
         $self->assert_not_null($obj->{errno});
 
         $obj->{errno} = 666;
+        eval { 1; };
         $obj->_collect_system_data;
         $self->assert_equals(666, $obj->{errno});
         
@@ -67,6 +69,7 @@ sub test_Exception_System_collect_system_data {
                         $obj->{errstros} = $errstros;
                         $obj->{errname} = $errname;
                         $obj->{errno} = $errno;
+                        eval { 1; };
                         $obj->_collect_system_data;
                         $self->assert(not defined $obj->{errstr} or not defined $obj->{errstros}
                             or not defined $obj->{errname} or not defined $obj->{errno});

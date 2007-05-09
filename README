@@ -22,6 +22,9 @@ DESCRIPTION
     errors.  The additional fields of the exception object are filled on
     throw and contain the error message and error codes.
 
+PREREQUISITIES
+    *   Exception::Base >= 0.03
+
 LICENSE
     Copyright 2007 by Piotr Roszatycki <dexter@debian.org>.
 
