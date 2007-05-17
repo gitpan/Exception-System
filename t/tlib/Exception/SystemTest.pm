@@ -96,7 +96,7 @@ sub test_Exception_System_throw {
         $self->assert_not_null($obj1);
         $self->assert($obj1->isa('Exception::System'));
         $self->assert($obj1->isa('Exception::Base'));
-        $self->assert_equals("Unknown exception\n", $obj1->stringify(1));
+        $self->assert_equals("Unknown system exception\n", $obj1->stringify(1));
         $self->assert($obj1->{errstr});
         $self->assert_equals('ENOENT', $obj1->{errname});
         $self->assert_equals(__PACKAGE__ . '::test_Exception_System_throw', $obj1->{caller_stack}->[3]->[3]);

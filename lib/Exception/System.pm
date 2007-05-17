@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 =head1 NAME
 
@@ -28,9 +28,9 @@ Exception::System - The exception class for system or library calls
 
 =head1 DESCRIPTION
 
-This class extends standard exception with handling system or library errors.
-The additional fields of the exception object are filled on throw and contain
-the error message and error codes.
+This class extends standard L<Exception::Base> with handling system or
+library errors. The additional fields of the exception object are filled on
+throw and contain the error message and error codes.
 
 =cut
 
@@ -49,6 +49,7 @@ use Errno ();
 # List of class fields (name => {is=>ro|rw, default=>value})
 use constant FIELDS => {
     %{ Exception::Base->FIELDS },     # SUPER::fields
+    message  => { is => 'rw', default => 'Unknown system exception' },
     errstr   => { is => 'ro' },
     errstros => { is => 'ro' },
     errno    => { is => 'ro' },

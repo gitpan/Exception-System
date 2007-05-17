@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+0.06 | Piotr Roszatycki <dexter@debian.org> | 2007-05-18
+
+* Bundle Test::Unit::Lite 0.02 to fix compilation on Perl 5.006 and 5.009.
+* Change default message to 'Unknown system exception'.
+
+------------------------------------------------------------------------
 0.05 | Piotr Roszatycki <dexter@debian.org> | 2007-05-11
 
 * Added bundled Test/Unit/Lite.pm to MANIFEST.
