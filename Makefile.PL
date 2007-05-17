@@ -8,7 +8,7 @@ WriteMakefile (
     dist            => { COMPRESS => 'gzip -9f', SUFFIX => 'gz' },
     PMLIBDIRS       => [ 'lib' ],
     PREREQ_PM       => {
-        'Exception::Base'       => 0.03,
+        'Exception::Base'       => 0.06,
     },
     AUTHOR          => 'Piotr Roszatycki <dexter@debian.org>',
     ABSTRACT        => 'Exception class for system or library calls',
@@ -29,7 +29,7 @@ license: perl
 distribution_type: module
 requires:
   perl: 5.006
-  Exception::Base: 0.03
+  Exception::Base: 0.06
 urls:
   license: http://dev.perl.org/licenses/
 meta-spec:

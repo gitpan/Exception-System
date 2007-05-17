@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = '0.06';
+our $VERSION = '0.0601';
 
 =head1 NAME
 
