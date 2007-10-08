@@ -1,14 +1,15 @@
 #!/usr/bin/perl -d:DProf
 
 use lib 'lib', '../lib';
-use Exception::System;
+use Exception::Base ':all',
+    'Exception::System';
 
 
 my $n = 0;
 
 foreach (1..10000) {
-    try Exception eval { throw Exception::System message=>'Message'; };
-    if (catch Exception my $e) {
+    try eval { throw Exception::System message=>'Message'; };
+    if (catch my $e) {
         if ($e->isa('Exception') and $e->with('Message')) { $n++; }
     }
 }

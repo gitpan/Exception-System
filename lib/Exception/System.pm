@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = '0.0601';
+our $VERSION = 0.07;
 
 =head1 NAME
 
@@ -11,11 +11,11 @@ Exception::System - The exception class for system or library calls
 =head1 SYNOPSIS
 
   # Loaded automatically if used as Exception::Base's argument
-  use Exception::Base
+  use Exception::Base ':all',
     'Exception::System',
     'Exception::File' => { isa => 'Exception::System' };
 
-  try Exception::Base eval {
+  try eval {
     my $file = "/notfound";
     open FILE, $file
         or throw Exception::File message=>"Can not open file: $file",
@@ -23,14 +23,14 @@ Exception::System - The exception class for system or library calls
   };
   if (catch Exception::System my $e) {
     if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
-    if ($e->with(errname=>'ENOENT')) { warn "Catched not found error"; }
+    if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
   }
 
 =head1 DESCRIPTION
 
-This class extends standard L<Exception::Base> with handling system or
-library errors. The additional fields of the exception object are filled on
-throw and contain the error message and error codes.
+This class extends standard L<Exception::Base> with handling system or library
+errors. The additional fields of the exception object are filled on throw and
+contain the error message and error codes.
 
 =cut
 
@@ -64,46 +64,46 @@ my %Errname = map { Errno->$_ => $_ } keys (%!);
 # Collect system data
 sub _collect_system_data {
     my $self = shift;
-    $self->SUPER::_collect_system_data(@_);
 
-    if (not defined $self->{errstr} and
-        not defined $self->{errstros} and
-        not defined $self->{errname} and
-        not defined $self->{errno})
-    {
-        $self->{errstr} = "$!";   # string context
-        $self->{errstros} = $^E;
-        $self->{errno} = 0+$!;    # numeric context
-        $self->{errname} = $Errname{ $self->{errno} } || '';
-    }
+    $self->{errstr} = "$!";   # string context
+    $self->{errstros} = $^E;
+    $self->{errno} = 0+$!;    # numeric context
+    $self->{errname} = $Errname{ $self->{errno} } || '';
 
-    return $self;
+    return $self->SUPER::_collect_system_data(@_);
 }
 
 
 # Convert an exception to string
 sub stringify {
-    my $self = shift;
-    my $verbosity = shift;
-    my $message = shift;
+    my ($self, $verbosity, $message) = @_;
 
-    $verbosity = defined $self->{verbosity} ? $self->{verbosity} : $self->{defaults}->{verbosity}
-        if not defined $verbosity;
-    $message = defined $self->{message}
-               ? ($self->{message} . (defined $self->{errstr} ? ': ' . $self->{errstr} : ''))
-               : $self->{defaults}->{message}
-        if not defined $message;
+    # the argument overrides the field
+    $message = $self->{message} unless defined $message;
 
-    my $string;
-
-    $string = $self->SUPER::stringify($verbosity, $message);
-
-    return $string;
+    my $is_message = defined $message && $message ne '';
+    my $is_errstr = $self->{errstr};
+    if ($is_message or $is_errstr) {
+        $message = ($is_message ? $message : '')
+                 . ($is_message && $is_errstr ? ': ' : '')
+                 . ($is_errstr ? $self->{errstr} : '');
+    }
+    else {
+        $message = $self->{defaults}->{message};
+    }
+    return $self->SUPER::stringify($verbosity, $message);
 }
+
+
+__PACKAGE__->_make_accessors;
 
 
 1;
 
+
+__END__
+
+=for readme stop
 
 =head1 PREREQUISITIES
 
@@ -111,7 +111,7 @@ sub stringify {
 
 =item *
 
-L<Exception::Base> >= 0.03
+L<Exception::Base> >= 0.09
 
 =back
 
@@ -195,13 +195,15 @@ The module was tested with L<Devel::Cover> and L<Devel::Dprof>.
 
 If you find the bug, please report it.
 
-=head1 AUTHORS
+=for readme continue
+
+=head1 AUTHOR
 
 Piotr Roszatycki E<lt>dexter@debian.orgE<gt>
 
 =head1 LICENSE
 
-Copyright 2007 by Piotr Roszatycki E<lt>dexter@debian.orgE<gt>.
+Copyright (C) 2007 by Piotr Roszatycki E<lt>dexter@debian.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

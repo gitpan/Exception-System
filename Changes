@@ -1,4 +1,19 @@
 ------------------------------------------------------------------------
+0.07 | Piotr Roszatycki <dexter@debian.org> | 2007-10-08
+
+New:
+
+* Defined accessors.
+
+Changes:
+
+* Switched to Module::Build.
+* Updated bundled Test::Unit::Lite to 0.05.
+* Prerequisites Exception::Base >= 0.09
+* The err* fields are reset after calling _collect_system_data().
+* Returns errstr only if message is empty.
+
+------------------------------------------------------------------------
 0.0601 | Piotr Roszatycki <dexter@debian.org> | 2007-05-18
 
 * Prerequisites Exception::Base >= 0.06

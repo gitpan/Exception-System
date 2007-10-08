@@ -4,12 +4,17 @@ use base 'Test::Unit::TestCase';
 
 use Exception::System;
 
-sub new {
-    my $self = shift()->SUPER::new(@_);
-    return $self;
+use Errno ();
+
+our $ENOENT;
+
+sub set_up {
+    $! = Errno::ENOENT;
+    $ENOENT = $!;
+    $! = 0;
 }
 
-sub test_Exception_System_isa {
+sub test___isa {
     my $self = shift;
     my $obj = Exception::System->new;
     $self->assert_not_null($obj);
@@ -17,7 +22,7 @@ sub test_Exception_System_isa {
     $self->assert($obj->isa('Exception::Base'));
 }
 
-sub test_Exception_System_field_message {
+sub test_field_message {
     my $self = shift;
     my $obj = Exception::System->new(message=>'Message');
     $self->assert_equals('Message', $obj->{message});
@@ -25,28 +30,22 @@ sub test_Exception_System_field_message {
     $self->assert_equals('New Message', $obj->{message});
 }
 
-sub test_Exception_System_field_properties {
+sub test_field_properties {
     my $self = shift;
     my $obj = Exception::System->new(message=>'Message', tag=>'Tag');
     $self->assert_equals('Tag', $obj->{properties}->{tag});
 }
 
-sub test_Exception_System_collect_system_data {
+sub test_collect_system_data {
     my $self = shift;
     
     eval {
-        my $obj = Exception::System->new(message=>'Collect');
+        eval { 1; };
 
+        my $obj = Exception::System->new(message=>'Collect');
         $self->assert_not_null($obj);
         $self->assert($obj->isa('Exception::Base'));
         $self->assert_equals('Collect', $obj->{message});
-        $self->assert_null($obj->{errstr});
-        $self->assert_null($obj->{errstros});
-        $self->assert_null($obj->{errname});
-        $self->assert_null($obj->{errno});
-        
-        eval { 1; };
-        $obj->_collect_system_data;
         $self->assert_not_null($obj->{errstr});
         $self->assert_not_null($obj->{errstros});
         $self->assert_not_null($obj->{errname});
@@ -55,34 +54,12 @@ sub test_Exception_System_collect_system_data {
         $obj->{errno} = 666;
         eval { 1; };
         $obj->_collect_system_data;
-        $self->assert_equals(666, $obj->{errno});
-        
-        foreach my $errstr (undef, 'defined') {
-            foreach my $errstros (undef, 'defined') {
-                foreach my $errname (undef, 'defined') {
-                    foreach my $errno (undef, 1) {
-                        next if not defined $errstr and not defined $errstros
-                            and not defined $errname and not defined $errno;
-                        next if defined $errstr and defined $errstros
-                            and defined $errname and defined $errno;
-                        $obj->{errstr} = $errstr;
-                        $obj->{errstros} = $errstros;
-                        $obj->{errname} = $errname;
-                        $obj->{errno} = $errno;
-                        eval { 1; };
-                        $obj->_collect_system_data;
-                        $self->assert(not defined $obj->{errstr} or not defined $obj->{errstros}
-                            or not defined $obj->{errname} or not defined $obj->{errno});
-                    }
-                }
-            }
-        }
-        
+        $self->assert_equals(0, $obj->{errno});
     };
     die "$@" if $@;
 }
 
-sub test_Exception_System_throw {
+sub test_throw {
     my $self = shift;
 
     # Secure with eval
@@ -96,10 +73,10 @@ sub test_Exception_System_throw {
         $self->assert_not_null($obj1);
         $self->assert($obj1->isa('Exception::System'));
         $self->assert($obj1->isa('Exception::Base'));
-        $self->assert_equals("Unknown system exception\n", $obj1->stringify(1));
+        $self->assert_equals("$ENOENT\n", $obj1->stringify(1));
         $self->assert($obj1->{errstr});
         $self->assert_equals('ENOENT', $obj1->{errname});
-        $self->assert_equals(__PACKAGE__ . '::test_Exception_System_throw', $obj1->{caller_stack}->[3]->[3]);
+        $self->assert_equals(__PACKAGE__ . '::test_throw', $obj1->{caller_stack}->[3]->[3]);
         $self->assert(ref $self, ref $obj1->{caller_stack}->[3]->[8]);
 
         # Rethrow
@@ -114,13 +91,13 @@ sub test_Exception_System_throw {
         $self->assert_null($obj2->{message});
         $self->assert($obj2->{errstr});
         $self->assert_equals('ENOENT', $obj2->{errname});
-        $self->assert_equals(__PACKAGE__ . '::test_Exception_System_throw', $obj2->{caller_stack}->[3]->[3]);
+        $self->assert_equals(__PACKAGE__ . '::test_throw', $obj2->{caller_stack}->[3]->[3]);
         $self->assert_equals(ref $self, ref $obj2->{caller_stack}->[3]->[8]);
     };
     die "$@" if $@;
 }
 
-sub test_Exception_System_with {
+sub test_with {
     my $self = shift;
 
     eval {
@@ -140,7 +117,7 @@ sub test_Exception_System_with {
     die "$@" if $@;
 }
 
-sub test_Exception_System_stringify {
+sub test_stringify {
     my $self = shift;
 
     eval {
@@ -151,15 +128,18 @@ sub test_Exception_System_stringify {
         $self->assert($obj->isa('Exception::Base'));
         $self->assert_equals('', $obj->stringify(0));
         $self->assert_equals("Stringify\n", $obj->stringify(1));
-        $self->assert_equals("Stringify at unknown line 0.\n", $obj->stringify(2));
-        $self->assert_equals("Exception::System: Stringify at unknown line 0\n", $obj->stringify(3));
+        $self->assert_matches(qr/Stringify at .* line \d+.\n/s, $obj->stringify(2));
+        $self->assert_matches(qr/Exception::System: Stringify at .* line \d+\n/s, $obj->stringify(3));
         $self->assert_equals("Message\n", $obj->stringify(1, "Message"));
+        $self->assert_equals("Unknown system exception\n", $obj->stringify(1, ""));
 
         $obj->{errstr} = 'Error';
         $self->assert_equals('', $obj->stringify(0));
         $self->assert_equals("Stringify: Error\n", $obj->stringify(1));
-        $self->assert_equals("Stringify: Error at unknown line 0.\n", $obj->stringify(2));
-        $self->assert_equals("Exception::System: Stringify: Error at unknown line 0\n", $obj->stringify(3));
+        $self->assert_matches(qr/Stringify: Error at .* line \d+.\n/s, $obj->stringify(2));
+        $self->assert_matches(qr/Exception::System: Stringify: Error at .* line \d+\n/s, $obj->stringify(3));
+        $self->assert_equals("Message: Error\n", $obj->stringify(1, "Message"));
+        $self->assert_equals("Error\n", $obj->stringify(1, ""));
 
         $self->assert_equals(3, $obj->{defaults}->{verbosity});
         $self->assert_equals(1, $obj->{defaults}->{verbosity} = 1);
@@ -173,7 +153,7 @@ sub test_Exception_System_stringify {
     die "$@" if $@;
 }
 
-sub test_Exception_System_try {
+sub test_try {
     my $self = shift;
 
     eval {
