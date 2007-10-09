@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------
+0.0701 | Piotr Roszatycki <dexter@debian.org> | 2007-10-09
+
+Changes:
+
+* Do not test POD errors unless $ENV{PERL_TEST_POD} is true.
+
+------------------------------------------------------------------------
 0.07 | Piotr Roszatycki <dexter@debian.org> | 2007-10-08
 
 New:
