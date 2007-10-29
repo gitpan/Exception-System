@@ -1,5 +1,8 @@
 package Exception::SystemTest;
 
+use strict;
+use warnings;
+
 use base 'Test::Unit::TestCase';
 
 use Exception::System;

@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.07_01;
+our $VERSION = 0.0702;
 
 =head1 NAME
 
@@ -95,7 +95,9 @@ sub stringify {
 }
 
 
-__PACKAGE__->_make_accessors;
+INIT: {
+    __PACKAGE__->_make_accessors;
+}
 
 
 1;
