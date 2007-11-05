@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.0702;
+our $VERSION = 0.08;
 
 =head1 NAME
 
@@ -57,8 +57,11 @@ use constant FIELDS => {
 };
 
 
-# Map for errno -> errname
-my %Errname = map { Errno->$_ => $_ } keys (%!);
+# Map for errno -> errname (shorter errname string for the same errno number)
+my %Errname = map { Errno->$_ => $_ }
+              sort { length $b <=> length $a }
+              sort
+              keys (%!);
 
 
 # Collect system data

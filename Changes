@@ -1,4 +1,13 @@
 ------------------------------------------------------------------------
+0.08 | Piotr Roszatycki <dexter@debian.org> | 2007-11-05
+
+Changes:
+
+* Get shorter errname string for the same errno number.  It should give the
+  same errname strings on Unix and Windows.
+* Updated bundled Test::Unit::Lite to 0.0701.
+
+------------------------------------------------------------------------
 0.0702 | Piotr Roszatycki <dexter@debian.org> | 2007-10-29
 
 Changes:

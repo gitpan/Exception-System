@@ -1,6 +1,6 @@
 ---
 name: Exception-System
-version: 0.0702
+version: 0.08
 author:
   - 'Piotr Roszatycki <dexter@debian.org>'
 abstract: The exception class for system or library calls
@@ -13,7 +13,7 @@ requires:
 provides:
   Exception::System:
     file: lib/Exception/System.pm
-    version: 0.0702
+    version: 0.08
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
