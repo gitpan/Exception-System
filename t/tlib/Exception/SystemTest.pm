@@ -144,12 +144,11 @@ sub test_stringify {
         $self->assert_equals("Message: Error\n", $obj->stringify(1, "Message"));
         $self->assert_equals("Error\n", $obj->stringify(1, ""));
 
-        $self->assert_equals(3, $obj->{defaults}->{verbosity});
         $self->assert_equals(1, $obj->{defaults}->{verbosity} = 1);
         $self->assert_equals(1, $obj->{defaults}->{verbosity});
         $self->assert_equals("Stringify: Error\n", $obj->stringify);
         $self->assert_not_null($obj->{defaults}->{verbosity});
-        $self->assert_equals(3, $obj->{defaults}->{verbosity} = Exception::System->FIELDS->{verbosity}->{default});
+        $obj->{defaults}->{verbosity} = Exception::System->FIELDS->{verbosity}->{default};
         $self->assert_equals(1, $obj->{verbosity} = 1);
         $self->assert_equals("Stringify: Error\n", $obj->stringify);
     };

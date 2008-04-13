@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+0.0801 | Piotr Roszatycki <dexter@debian.org> | 2008-04-13
+
+Changes:
+
+* Prerequisites Exception::Base >= 0.14.
+* Updated bundled Test::Unit::Lite to 0.0903.
+
+------------------------------------------------------------------------
 0.08 | Piotr Roszatycki <dexter@debian.org> | 2007-11-05
 
 Changes:

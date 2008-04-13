@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.08;
+our $VERSION = 0.08_01;
 
 =head1 NAME
 
@@ -48,7 +48,7 @@ use Errno ();
 
 # List of class fields (name => {is=>ro|rw, default=>value})
 use constant FIELDS => {
-    %{ Exception::Base->FIELDS },     # SUPER::fields
+    %{ Exception::Base->FIELDS },     # SUPER::FIELDS
     message  => { is => 'rw', default => 'Unknown system exception' },
     errstr   => { is => 'ro' },
     errstros => { is => 'ro' },
@@ -116,13 +116,25 @@ __END__
 
 =item *
 
-L<Exception::Base> >= 0.09
+L<Exception::Base> >= 0.14
+
+=back
+
+=head1 CONSTANTS
+
+=over
+
+=item FIELDS
+
+Declaration of class fields as reference to hash.
 
 =back
 
 =head1 FIELDS
 
-Class fields are implemented as values of blessed hash.
+Class fields are implemented as values of blessed hash.  The fields of
+base class are inherited.  See L<Exception::Base> to see theirs
+description.
 
 =over
 
@@ -208,7 +220,7 @@ Piotr Roszatycki E<lt>dexter@debian.orgE<gt>
 
 =head1 LICENSE
 
-Copyright (C) 2007 by Piotr Roszatycki E<lt>dexter@debian.orgE<gt>.
+Copyright (C) 2007, 2008 by Piotr Roszatycki E<lt>dexter@debian.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
