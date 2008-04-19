@@ -10,10 +10,11 @@ SYNOPSIS
       try eval {
         my $file = "/notfound";
         open FILE, $file
-            or throw Exception::File message=>"Can not open file: $file",
-                                     file=>$file;
+            or throw 'Exception::File' =>
+                     message=>"Can not open file: $file",
+                     file=>$file;
       };
-      if (catch Exception::System my $e) {
+      if (catch 'Exception::System' => my $e) {
         if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
         if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
       }

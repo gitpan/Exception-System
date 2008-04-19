@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.08_01;
+our $VERSION = 0.08_02;
 
 =head1 NAME
 
@@ -18,10 +18,11 @@ Exception::System - The exception class for system or library calls
   try eval {
     my $file = "/notfound";
     open FILE, $file
-        or throw Exception::File message=>"Can not open file: $file",
-                                 file=>$file;
+        or throw 'Exception::File' =>
+	         message=>"Can not open file: $file",
+                 file=>$file;
   };
-  if (catch Exception::System my $e) {
+  if (catch 'Exception::System' => my $e) {
     if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
     if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
   }
@@ -116,7 +117,7 @@ __END__
 
 =item *
 
-L<Exception::Base> >= 0.14
+L<Exception::Base> >= 0.15
 
 =back
 
@@ -144,8 +145,8 @@ Contains the system error string fetched at exception throw.  It is the part
 of the string representing the exception object.  It is the same as B<$!>
 variable in string context.
 
-  eval { throw Exception::System message=>"Message"; };
-  catch Exception::System my $e
+  eval { throw 'Exception::System' => message=>"Message"; };
+  catch 'Exception::System' => my $e
     and print $e->{errstr};
 
 =item errstros (ro)
@@ -153,23 +154,26 @@ variable in string context.
 Contains the extended system error string fetched at exception throw.  It is
 the same as B<$^E> variable.
 
-  eval { throw Exception::System message=>"Message"; };
-  catch Exception::System my $e and $e->{errstros} ne $e->{errstr}
-    and print $e->{errstros};
+  eval { throw 'Exception::System' => message=>"Message"; };
+  if (catch 'Exception::System' => my $e) {
+    if ($e->{errstros} ne $e->{errstr}) {
+      print $e->{errstros};
+    }
+  }
 
 =item errno (ro)
 
 Contains the system error number fetched at exception throw.  It is the same
 as B<$!> variable in numeric context.
 
-  eval { throw Exception::System message=>"Message"; };
+  eval { throw 'Exception::System' => message=>"Message"; };
 
 =item errname (ro)
 
 Contains the system error constant from the system F<error.h> include file.
 
-  eval { throw Exception::System message=>"Message"; };
-  catch Exception::System my $e and $e->{errname} eq 'ENOENT'
+  eval { throw 'Exception::System' => message=>"Message"; };
+  catch 'Exception::System' => my $e and $e->{errname} eq 'ENOENT'
     and $e->throw;
 
 =back
@@ -183,7 +187,7 @@ Contains the system error constant from the system F<error.h> include file.
 Returns the string representation of exception object.  The format of output
 is "message: error string".
 
-  eval { open F, "/notexisting"; throw Exception::System; };
+  eval { open F, "/notexisting"; throw 'Exception::System'; };
   print $@->stringify(1);
   print "$@";
 
