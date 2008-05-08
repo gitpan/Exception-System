@@ -3,26 +3,27 @@ NAME
 
 SYNOPSIS
       # Loaded automatically if used as Exception::Base's argument
-      use Exception::Base ':all',
+      use Exception::Base,
         'Exception::System',
         'Exception::File' => { isa => 'Exception::System' };
 
-      try eval {
+      eval {
         my $file = "/notfound";
         open FILE, $file
-            or throw 'Exception::File' =>
-                     message=>"Can not open file: $file",
-                     file=>$file;
+            or Exception::File->throw(
+                   message=>"Can not open file: $file",
+               );
       };
-      if (catch 'Exception::System' => my $e) {
+      if ($@) {
+        my $e = Exception::Base->catch;
         if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
         if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
       }
 
 DESCRIPTION
     This class extends standard Exception::Base with handling system or
-    library errors. The additional fields of the exception object are filled
-    on throw and contain the error message and error codes.
+    library errors. The additional attributes of the exception object are
+    filled on throw and contain the error message and error codes.
 
 AUTHOR
     Piotr Roszatycki <dexter@debian.org>

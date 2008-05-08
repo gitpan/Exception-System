@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.08_02;
+our $VERSION = 0.09;
 
 =head1 NAME
 
@@ -11,18 +11,19 @@ Exception::System - The exception class for system or library calls
 =head1 SYNOPSIS
 
   # Loaded automatically if used as Exception::Base's argument
-  use Exception::Base ':all',
+  use Exception::Base,
     'Exception::System',
     'Exception::File' => { isa => 'Exception::System' };
 
-  try eval {
+  eval {
     my $file = "/notfound";
     open FILE, $file
-        or throw 'Exception::File' =>
-	         message=>"Can not open file: $file",
-                 file=>$file;
+        or Exception::File->throw(
+               message=>"Can not open file: $file",
+           );
   };
-  if (catch 'Exception::System' => my $e) {
+  if ($@) {
+    my $e = Exception::Base->catch;
     if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
     if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
   }
@@ -30,13 +31,16 @@ Exception::System - The exception class for system or library calls
 =head1 DESCRIPTION
 
 This class extends standard L<Exception::Base> with handling system or library
-errors. The additional fields of the exception object are filled on throw and
-contain the error message and error codes.
+errors.  The additional attributes of the exception object are filled on throw
+and contain the error message and error codes.
+
+=for readme stop
 
 =cut
 
 
 use strict;
+use warnings;
 
 
 # Base class
@@ -47,9 +51,9 @@ use base 'Exception::Base';
 use Errno ();
 
 
-# List of class fields (name => {is=>ro|rw, default=>value})
-use constant FIELDS => {
-    %{ Exception::Base->FIELDS },     # SUPER::FIELDS
+# List of class attributes (name => {is=>ro|rw, default=>value})
+use constant ATTRS => {
+    %{ Exception::Base->ATTRS },     # SUPER::ATTRS
     message  => { is => 'rw', default => 'Unknown system exception' },
     errstr   => { is => 'ro' },
     errstros => { is => 'ro' },
@@ -58,7 +62,7 @@ use constant FIELDS => {
 };
 
 
-# Map for errno -> errname (shorter errname string for the same errno number)
+# Map for errno -> errname (choose the shortest errname string for the same errno number)
 my %Errname = map { Errno->$_ => $_ }
               sort { length $b <=> length $a }
               sort
@@ -82,7 +86,7 @@ sub _collect_system_data {
 sub stringify {
     my ($self, $verbosity, $message) = @_;
 
-    # the argument overrides the field
+    # the argument overrides the attribute
     $message = $self->{message} unless defined $message;
 
     my $is_message = defined $message && $message ne '';
@@ -95,13 +99,24 @@ sub stringify {
     else {
         $message = $self->{defaults}->{message};
     }
+
     return $self->SUPER::stringify($verbosity, $message);
 }
 
 
-INIT: {
+# Stringify for overloaded operator. The same as SUPER but Perl needs it here.
+sub __stringify {
+    return $_[0]->stringify;
+}
+
+
+# Module initialization
+sub __init {
     __PACKAGE__->_make_accessors;
 }
+
+
+__init;
 
 
 1;
@@ -109,33 +124,20 @@ INIT: {
 
 __END__
 
-=for readme stop
-
-=head1 PREREQUISITIES
+=head1 BASE CLASSES
 
 =over
 
 =item *
 
-L<Exception::Base> >= 0.15
+L<Exception::Base>
 
 =back
 
-=head1 CONSTANTS
+=head1 ATTRIBUTES
 
-=over
-
-=item FIELDS
-
-Declaration of class fields as reference to hash.
-
-=back
-
-=head1 FIELDS
-
-Class fields are implemented as values of blessed hash.  The fields of
-base class are inherited.  See L<Exception::Base> to see theirs
-description.
+Class attributes are implemented as values of blessed hash.  The attributes of
+base class are inherited.  See L<Exception::Base> to see theirs description.
 
 =over
 
@@ -145,8 +147,8 @@ Contains the system error string fetched at exception throw.  It is the part
 of the string representing the exception object.  It is the same as B<$!>
 variable in string context.
 
-  eval { throw 'Exception::System' => message=>"Message"; };
-  catch 'Exception::System' => my $e
+  eval { Exception::System->throw( message=>"Message" ); };
+  my $e = Exception::Base->catch
     and print $e->{errstr};
 
 =item errstros (ro)
@@ -154,8 +156,9 @@ variable in string context.
 Contains the extended system error string fetched at exception throw.  It is
 the same as B<$^E> variable.
 
-  eval { throw 'Exception::System' => message=>"Message"; };
-  if (catch 'Exception::System' => my $e) {
+  eval { Exception::System->throw( message=>"Message" ); };
+  if ($@) {
+    my $e = Exception::Base->catch;
     if ($e->{errstros} ne $e->{errstr}) {
       print $e->{errstros};
     }
@@ -166,14 +169,22 @@ the same as B<$^E> variable.
 Contains the system error number fetched at exception throw.  It is the same
 as B<$!> variable in numeric context.
 
-  eval { throw 'Exception::System' => message=>"Message"; };
+  use Errno ();
+  eval { Exception::System->throw( message=>"Message" ); };
+  if ($@) {
+    my $e = Exception::Base->catch;
+    if ($e->{errno} == &Errno::ENOENT) {
+      warn "Not found";
+    }
+  }
 
 =item errname (ro)
 
 Contains the system error constant from the system F<error.h> include file.
 
-  eval { throw 'Exception::System' => message=>"Message"; };
-  catch 'Exception::System' => my $e and $e->{errname} eq 'ENOENT'
+  eval { Exception::System->throw( message=>"Message" ); };
+  my $e = Exception::Base->catch
+    and $e->{errname} eq 'ENOENT'
     and $e->throw;
 
 =back
@@ -185,9 +196,9 @@ Contains the system error constant from the system F<error.h> include file.
 =item stringify([$I<verbosity>[, $I<message>]])
 
 Returns the string representation of exception object.  The format of output
-is "message: error string".
+is "I<message>: I<errstr>".
 
-  eval { open F, "/notexisting"; throw 'Exception::System'; };
+  eval { open F, "/notexisting" or Exception::System->throw; };
   print $@->stringify(1);
   print "$@";
 
@@ -211,8 +222,6 @@ See L<Exception::Base>.
 L<Exception::Base>.
 
 =head1 BUGS
-
-The module was tested with L<Devel::Cover> and L<Devel::Dprof>.
 
 If you find the bug, please report it.
 

@@ -1,4 +1,14 @@
 ------------------------------------------------------------------------
+0.09 | Piotr Roszatycki <dexter@debian.org> | 2008-05-06
+
+Changes:
+
+* Requires Exception::Base >= 0.16.
+* The FIELD constant renamed to ATTRS as far as every OO language calls it
+  attributes.
+* See Exception::Base for incompatibilities list.
+
+------------------------------------------------------------------------
 0.0802 | Piotr Roszatycki <dexter@debian.org> | 2008-04-19
 
 Changes:
