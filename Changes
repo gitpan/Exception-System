@@ -1,9 +1,21 @@
 ------------------------------------------------------------------------
-0.09 | Piotr Roszatycki <dexter@debian.org> | 2008-05-06
+0.0901 | Piotr Roszatycki <dexter@debian.org> | 2008-05-08
+
+Changes:
+
+* Fixed MANIFEST.
+
+------------------------------------------------------------------------
+0.09 | Piotr Roszatycki <dexter@debian.org> | 2008-05-08
+
+Changes:
+------------------------------------------------------------------------
+0.09 | Piotr Roszatycki <dexter@debian.org> | 2008-05-08
 
 Changes:
 
 * Requires Exception::Base >= 0.16.
+* Build requires Test::Unit::Lite >= 0.07.
 * The FIELD constant renamed to ATTRS as far as every OO language calls it
   attributes.
 * See Exception::Base for incompatibilities list.
