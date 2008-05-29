@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.09_01;
+our $VERSION = 0.09_02;
 
 =head1 NAME
 
@@ -131,6 +131,18 @@ __END__
 =item *
 
 L<Exception::Base>
+
+=back
+
+=head1 CONSTANTS
+
+=over
+
+=item ATTRS
+
+Declaration of class attributes as reference to hash.
+
+See L<Exception::Base> for details.
 
 =back
 
