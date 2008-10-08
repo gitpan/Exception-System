@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.09_02;
+our $VERSION = '0.10';
 
 =head1 NAME
 
@@ -13,13 +13,18 @@ Exception::System - The exception class for system or library calls
   # Loaded automatically if used as Exception::Base's argument
   use Exception::Base,
     'Exception::System',
-    'Exception::File' => { isa => 'Exception::System' };
+    'Exception::File' => {
+        isa => 'Exception::System',
+        has => 'file',
+        stringify_attributes => [ 'message', 'errstr', 'file' ],
+    };
 
   eval {
     my $file = "/notfound";
     open FILE, $file
         or Exception::File->throw(
-               message=>"Can not open file: $file",
+               message=>"Can not open file",
+               file=>$file,
            );
   };
   if ($@) {
@@ -43,7 +48,8 @@ use strict;
 use warnings;
 
 
-# Base class
+# Extend Exception::Base class
+use Exception::Base 0.18;
 use base 'Exception::Base';
 
 
@@ -54,6 +60,8 @@ use Errno ();
 # List of class attributes (name => {is=>ro|rw, default=>value})
 use constant ATTRS => {
     %{ Exception::Base->ATTRS },     # SUPER::ATTRS
+    stringify_attributes => { default => [ 'message', 'errstr' ] },
+    numeric_attribute    => { default => 'errno' },
     message  => { is => 'rw', default => 'Unknown system exception' },
     errstr   => { is => 'ro' },
     errstros => { is => 'ro' },
@@ -73,40 +81,12 @@ my %Errname = map { Errno->$_ => $_ }
 sub _collect_system_data {
     my $self = shift;
 
-    $self->{errstr} = "$!";   # string context
+    $self->{errstr}   = "$!";   # string context
     $self->{errstros} = $^E;
-    $self->{errno} = 0+$!;    # numeric context
-    $self->{errname} = $Errname{ $self->{errno} } || '';
+    $self->{errno}    = 0+$!;   # numeric context
+    $self->{errname}  = $Errname{ $self->{errno} } || '';
 
     return $self->SUPER::_collect_system_data(@_);
-}
-
-
-# Convert an exception to string
-sub stringify {
-    my ($self, $verbosity, $message) = @_;
-
-    # the argument overrides the attribute
-    $message = $self->{message} unless defined $message;
-
-    my $is_message = defined $message && $message ne '';
-    my $is_errstr = $self->{errstr};
-    if ($is_message or $is_errstr) {
-        $message = ($is_message ? $message : '')
-                 . ($is_message && $is_errstr ? ': ' : '')
-                 . ($is_errstr ? $self->{errstr} : '');
-    }
-    else {
-        $message = $self->{defaults}->{message};
-    }
-
-    return $self->SUPER::stringify($verbosity, $message);
-}
-
-
-# Stringify for overloaded operator. The same as SUPER but Perl needs it here.
-sub __stringify {
-    return $_[0]->stringify;
 }
 
 
@@ -123,6 +103,28 @@ __init;
 
 
 __END__
+
+=begin umlwiki
+
+= Class Diagram =
+
+[                       <<exception>>
+                      Exception::System
+ -------------------------------------------------------------
+ +message : Str = "Unknown system exception"             {new}
+ +errstr : Str
+ +errstros : Str
+ +errno : Int
+ +errname : Str
+ #numeric_attribute : Str = "strno"
+ #stringify_attributes : ArrayRef[Str] = ["message", "errstr"]
+ -------------------------------------------------------------
+ #_collect_system_data()
+ <<constant>> +ATTRS() : HashRef                              ]
+
+[Exception::System] ---|> [Exception::Base]
+
+=end umlwiki
 
 =head1 BASE CLASSES
 
@@ -159,9 +161,9 @@ Contains the system error string fetched at exception throw.  It is the part
 of the string representing the exception object.  It is the same as B<$!>
 variable in string context.
 
-  eval { Exception::System->throw( message=>"Message" ); };
+  eval { Exception::System->throw( message=>"Message" ) };
   my $e = Exception::Base->catch
-    and print $e->{errstr};
+    and print $e->errstr;
 
 =item errstros (ro)
 
@@ -171,22 +173,26 @@ the same as B<$^E> variable.
   eval { Exception::System->throw( message=>"Message" ); };
   if ($@) {
     my $e = Exception::Base->catch;
-    if ($e->{errstros} ne $e->{errstr}) {
-      print $e->{errstros};
+    if ($e->errstros ne $e->errstr) {
+      print $e->errstros;
     }
   }
 
 =item errno (ro)
 
 Contains the system error number fetched at exception throw.  It is the same
-as B<$!> variable in numeric context.
+as B<$!> variable in numeric context.  This attribute represents numeric value
+of the exception object in numeric context.
 
   use Errno ();
   eval { Exception::System->throw( message=>"Message" ); };
   if ($@) {
     my $e = Exception::Base->catch;
-    if ($e->{errno} == &Errno::ENOENT) {
+    if ($e->errno == &Errno::ENOENT) {  # explicity
       warn "Not found";
+    }
+    elsif ($e == &Errno::EPERM) {       # numeric context
+      warn "Bad permissions";
     }
   }
 
@@ -196,23 +202,8 @@ Contains the system error constant from the system F<error.h> include file.
 
   eval { Exception::System->throw( message=>"Message" ); };
   my $e = Exception::Base->catch
-    and $e->{errname} eq 'ENOENT'
+    and $e->errname eq 'ENOENT'
     and $e->throw;
-
-=back
-
-=head1 METHODS
-
-=over
-
-=item stringify([$I<verbosity>[, $I<message>]])
-
-Returns the string representation of exception object.  The format of output
-is "I<message>: I<errstr>".
-
-  eval { open F, "/notexisting" or Exception::System->throw; };
-  print $@->stringify(1);
-  print "$@";
 
 =back
 

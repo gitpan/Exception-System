@@ -1,4 +1,18 @@
 ------------------------------------------------------------------------
+0.10 | Piotr Roszatycki <dexter@debian.org> | 2008-10-07
+
+Changes:
+
+* "strno" attribute represents numeric value of object.
+
+  eval { open my $f, "/file" or Exception::System->throw };
+  if ($@ and $@ == &Errno::ENOENT) { warn "file not found" }
+
+* Uses "numeric_attribute" and "stringify_attributes" attributes.
+
+* Requires Exception::Base >= 0.18.
+
+------------------------------------------------------------------------
 0.0902 | Piotr Roszatycki <dexter@debian.org> | 2008-05-29
 
 Changes:
