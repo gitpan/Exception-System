@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = '0.10';
+our $VERSION = 0.10_01;
 
 =head1 NAME
 
@@ -10,27 +10,34 @@ Exception::System - The exception class for system or library calls
 
 =head1 SYNOPSIS
 
+  # The simplest usage
+  use Exception::Base 'Exception::System';
+  open my $file, "/notfound"
+    or Exception::System->throw(message=>"Can not open file");
+
+  # The Exception::System class can be a base class for others
+  #
   # Loaded automatically if used as Exception::Base's argument
   use Exception::Base,
     'Exception::System',
     'Exception::File' => {
         isa => 'Exception::System',
-        has => 'file',
-        stringify_attributes => [ 'message', 'errstr', 'file' ],
+        has => 'filename',
+        stringify_attributes => [ 'message', 'errstr', 'filename' ],
     };
 
   eval {
-    my $file = "/notfound";
-    open FILE, $file
+    my $filename = "/notfound";
+    open my $fh, $filename
         or Exception::File->throw(
                message=>"Can not open file",
-               file=>$file,
+               filename=>$filename,
            );
   };
   if ($@) {
     my $e = Exception::Base->catch;
-    if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
-    if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
+    if ($e->isa('Exception::File')) { warn "File error:".$e->errstr; }
+    if ($e->matches({errname=>'ENOENT'})) { warn "Caught not found error"; }
   }
 
 =head1 DESCRIPTION
@@ -49,7 +56,7 @@ use warnings;
 
 
 # Extend Exception::Base class
-use Exception::Base 0.18;
+use Exception::Base 0.19;
 use base 'Exception::Base';
 
 
@@ -155,6 +162,11 @@ base class are inherited.  See L<Exception::Base> to see theirs description.
 
 =over
 
+=item message (rw, default: 'Unknown system exception')
+
+Contains the message of the exception.  This class overrides the default value
+from L<Exception::Base> class.
+
 =item errstr (ro)
 
 Contains the system error string fetched at exception throw.  It is the part
@@ -205,6 +217,18 @@ Contains the system error constant from the system F<error.h> include file.
     and $e->errname eq 'ENOENT'
     and $e->throw;
 
+=item stringify_attributes (default: ['message', 'errstr'])
+
+Meta-attribute contains the format of string representation of exception
+object.  This class overrides the default value from L<Exception::Base>
+class.
+
+=item numeric_attribute (default: 'errno')
+
+Meta-attribute contains the name of the attribute which contains numeric
+value of exception object.  This class overrides the default value from
+L<Exception::Base> class.
+
 =back
 
 =head1 PRIVATE METHODS
@@ -213,10 +237,9 @@ Contains the system error constant from the system F<error.h> include file.
 
 =item _collect_system_data
 
-Collect system data and fill the attributes of exception object.  This method
-is called automatically if exception if throwed.
-
-See L<Exception::Base>.
+Collect system data and fill the attributes of exception object.  This
+method is called automatically if exception if throwed.  This class
+overrides the method from L<Exception::Base> class.
 
 =back
 

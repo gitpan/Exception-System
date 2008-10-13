@@ -1,4 +1,15 @@
 ------------------------------------------------------------------------
+0.1001 | Piotr Roszatycki <dexter@debian.org> | 2008-10-13
+
+Changes:
+
+* Requires Exception::Base >= 0.19.
+
+* Build requires Test::Unit::Lite >= 0.10.
+
+* Minor POD changes.
+
+------------------------------------------------------------------------
 0.10 | Piotr Roszatycki <dexter@debian.org> | 2008-10-07
 
 Changes:

@@ -2,107 +2,40 @@ NAME
     Exception::System - The exception class for system or library calls
 
 SYNOPSIS
+      # The simplest usage
+      use Exception::Base 'Exception::System';
+      open my $file, "/notfound"
+        or Exception::System->throw(message=>"Can not open file");
+
+      # The Exception::System class can be a base class for others
+      #
       # Loaded automatically if used as Exception::Base's argument
       use Exception::Base,
         'Exception::System',
         'Exception::File' => {
             isa => 'Exception::System',
-            has => 'file',
-            stringify_attributes => [ 'message', 'errstr', 'file' ],
+            has => 'filename',
+            stringify_attributes => [ 'message', 'errstr', 'filename' ],
         };
 
       eval {
-        my $file = "/notfound";
-        open FILE, $file
+        my $filename = "/notfound";
+        open my $fh, $filename
             or Exception::File->throw(
                    message=>"Can not open file",
-                   file=>$file,
+                   filename=>$filename,
                );
       };
       if ($@) {
         my $e = Exception::Base->catch;
-        if ($e->isa('Exception::File')) { warn "File error:".$e->{errstr}; }
-        if ($e->with(errname=>'ENOENT')) { warn "Caught not found error"; }
+        if ($e->isa('Exception::File')) { warn "File error:".$e->errstr; }
+        if ($e->matches({errname=>'ENOENT'})) { warn "Caught not found error"; }
       }
 
 DESCRIPTION
     This class extends standard Exception::Base with handling system or
     library errors. The additional attributes of the exception object are
     filled on throw and contain the error message and error codes.
-
-BASE CLASSES
-    *   Exception::Base
-
-CONSTANTS
-    ATTRS
-        Declaration of class attributes as reference to hash.
-
-        See Exception::Base for details.
-
-ATTRIBUTES
-    Class attributes are implemented as values of blessed hash. The
-    attributes of base class are inherited. See Exception::Base to see
-    theirs description.
-
-    errstr (ro)
-        Contains the system error string fetched at exception throw. It is
-        the part of the string representing the exception object. It is the
-        same as $! variable in string context.
-
-          eval { Exception::System->throw( message=>"Message" ) };
-          my $e = Exception::Base->catch
-            and print $e->errstr;
-
-    errstros (ro)
-        Contains the extended system error string fetched at exception
-        throw. It is the same as $^E variable.
-
-          eval { Exception::System->throw( message=>"Message" ); };
-          if ($@) {
-            my $e = Exception::Base->catch;
-            if ($e->errstros ne $e->errstr) {
-              print $e->errstros;
-            }
-          }
-
-    errno (ro)
-        Contains the system error number fetched at exception throw. It is
-        the same as $! variable in numeric context. This attribute
-        represents numeric value of the exception object in numeric context.
-
-          use Errno ();
-          eval { Exception::System->throw( message=>"Message" ); };
-          if ($@) {
-            my $e = Exception::Base->catch;
-            if ($e->errno == &Errno::ENOENT) {  # explicity
-              warn "Not found";
-            }
-            elsif ($e == &Errno::EPERM) {       # numeric context
-              warn "Bad permissions";
-            }
-          }
-
-    errname (ro)
-        Contains the system error constant from the system error.h include
-        file.
-
-          eval { Exception::System->throw( message=>"Message" ); };
-          my $e = Exception::Base->catch
-            and $e->errname eq 'ENOENT'
-            and $e->throw;
-
-PRIVATE METHODS
-    _collect_system_data
-        Collect system data and fill the attributes of exception object.
-        This method is called automatically if exception if throwed.
-
-        See Exception::Base.
-
-SEE ALSO
-    Exception::Base.
-
-BUGS
-    If you find the bug, please report it.
 
 AUTHOR
     Piotr Roszatycki <dexter@debian.org>
@@ -113,5 +46,5 @@ LICENSE
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
 
-    See <http://www.perl.com/perl/misc/Artistic.html>
+    See http://www.perl.com/perl/misc/Artistic.html
 

@@ -6,26 +6,30 @@
 # Use module and create needed exceptions
 use Exception::Base
     'Exception::IO' => { isa => 'Exception::System' },
-    'Exception::FileNotFound' => { isa => 'Exception::IO' };
-
-sub func1 {
-    # try / catch
-    try Exception::Base eval {
-        my $file = '/notfound';
-        open FILE, $file
-            or throw Exception::FileNotFound
-                     message=>'Can not open file', file=>$file;
+    'Exception::FileNotFound' => {
+	isa => 'Exception::IO',
+	has => 'filename',
+	stringify_attributes => [ 'message', 'errstr', 'filename' ],
     };
 
-    if (catch Exception::IO my $e) {
+sub func1 {
+    eval {
+        my $filename = '/notfound';
+        open my $fh, $filename
+            or throw Exception::FileNotFound
+                     message=>'Can not open file', filename=>$filename;
+    };
+
+    if ($@) {
+	my $e = Exception::IO->catch;
         # $e is an exception object for sure, no need to check if is blessed
-        warn "Exception caught";
+        warn "*** Exception caught";
         if ($e->isa('Exception::FileNotFound')) {
-            warn "Exception caught for file " . $e->{properties}->{file}
-               . " with error " . $e->{errname};
+            warn "*** Exception caught for file " . $e->filename
+               . " with error " . $e->errname;
         }
         # rethrow the exception
-        warn "Rethrow exception";
+        warn "*** Rethrow exception";
         $e->throw;
     }
 }
