@@ -82,7 +82,8 @@ sub test_throw {
         $self->assert_not_null($obj1);
         $self->assert($obj1->isa("Exception::System"), '$obj1->isa("Exception::System")');
         $self->assert($obj1->isa("Exception::Base"), '$obj1->isa("Exception::Base")');
-        $self->assert_equals("$ENOENT\n", $obj1->stringify(1));
+        $obj1->verbosity = 1;
+        $self->assert_equals("$ENOENT\n", $obj1->to_string);
         $self->assert($obj1->{errstr});
         $self->assert_equals('ENOENT', $obj1->{errname});
         $self->assert_equals(__PACKAGE__ . '::test_throw', $obj1->{caller_stack}->[3]->[3]);
@@ -112,21 +113,21 @@ sub test_with {
     my $obj1 = Exception::System->new(message=>'Message');
     $obj1->{errstr} = 'Errstr';
     $obj1->{errno} = 123;
-    $self->assert_num_equals(0, $obj1->with(undef));
-    $self->assert_num_equals(0, $obj1->with(message=>undef));
-    $self->assert_num_equals(1, $obj1->with('Message: Errstr'));
-    $self->assert_num_equals(1, $obj1->with(123));
-    $self->assert_num_equals(1, $obj1->with(message=>'Message'));
-    $self->assert_num_equals(0, $obj1->with(errstr=>undef));
-    $self->assert_num_equals(1, $obj1->with(errstr=>'Errstr'));
-    $self->assert_num_equals(1, $obj1->with(errstr=>sub {/Errstr/}));
-    $self->assert_num_equals(0, $obj1->with(errstr=>sub {/false/}));
-    $self->assert_num_equals(1, $obj1->with(errstr=>qr/Errstr/));
-    $self->assert_num_equals(0, $obj1->with(errstr=>qr/false/));
-    $self->assert_num_equals(1, $obj1->with(errno=>123));
+    $self->assert_num_equals(0, $obj1->matches(undef));
+    $self->assert_num_equals(0, $obj1->matches({message=>undef}));
+    $self->assert_num_equals(1, $obj1->matches('Message: Errstr'));
+    $self->assert_num_equals(1, $obj1->matches(123));
+    $self->assert_num_equals(1, $obj1->matches({message=>'Message'}));
+    $self->assert_num_equals(0, $obj1->matches({errstr=>undef}));
+    $self->assert_num_equals(1, $obj1->matches({errstr=>'Errstr'}));
+    $self->assert_num_equals(1, $obj1->matches({errstr=>sub {/Errstr/}}));
+    $self->assert_num_equals(0, $obj1->matches({errstr=>sub {/false/}}));
+    $self->assert_num_equals(1, $obj1->matches({errstr=>qr/Errstr/}));
+    $self->assert_num_equals(0, $obj1->matches({errstr=>qr/false/}));
+    $self->assert_num_equals(1, $obj1->matches({errno=>123}));
 }
 
-sub test_stringify {
+sub test_to_string {
     my $self = shift;
 
     my $obj = Exception::System->new(message=>'Stringify');
@@ -134,64 +135,45 @@ sub test_stringify {
     $self->assert_not_null($obj);
     $self->assert($obj->isa("Exception::System"), '$obj->isa("Exception::System")');
     $self->assert($obj->isa("Exception::Base"), '$obj->isa("Exception::Base")');
-    $self->assert_equals('', $obj->stringify(0));
-    $self->assert_equals("Stringify\n", $obj->stringify(1));
-    $self->assert_matches(qr/Stringify at .* line \d+.\n/s, $obj->stringify(2));
-    $self->assert_matches(qr/Exception::System: Stringify at .* line \d+\n/s, $obj->stringify(3));
-    $self->assert_equals("Message\n", $obj->stringify(1, "Message"));
-    $self->assert_equals("Unknown system exception\n", $obj->stringify(1, ""));
+    $obj->verbosity = 0;
+    $self->assert_equals('', $obj->to_string);
+    $obj->verbosity = 1;
+    $self->assert_equals("Stringify\n", $obj->to_string);
+    $obj->verbosity = 2;
+    $self->assert_matches(qr/Stringify at .* line \d+.\n/s, $obj->to_string);
+    $obj->verbosity = 3;
+    $self->assert_matches(qr/Exception::System: Stringify at .* line \d+\n/s, $obj->to_string);
 
     $obj->{errstr} = 'Error';
-    $self->assert_equals('', $obj->stringify(0));
-    $self->assert_equals("Stringify: Error\n", $obj->stringify(1));
-    $self->assert_matches(qr/Stringify: Error at .* line \d+.\n/s, $obj->stringify(2));
-    $self->assert_matches(qr/Exception::System: Stringify: Error at .* line \d+\n/s, $obj->stringify(3));
-    $self->assert_equals("Message\n", $obj->stringify(1, "Message"));
-    $self->assert_equals("Unknown system exception\n", $obj->stringify(1, ""));
+    $obj->verbosity = 0;
+    $self->assert_equals('', $obj->to_string);
+    $obj->verbosity = 1;
+    $self->assert_equals("Stringify: Error\n", $obj->to_string);
+    $obj->verbosity = 2;
+    $self->assert_matches(qr/Stringify: Error at .* line \d+.\n/s, $obj->to_string);
+    $obj->verbosity = 3;
+    $self->assert_matches(qr/Exception::System: Stringify: Error at .* line \d+\n/s, $obj->to_string);
 
+    $obj->verbosity = undef;
     $self->assert_equals(1, $obj->{defaults}->{verbosity} = 1);
     $self->assert_equals(1, $obj->{defaults}->{verbosity});
-    $self->assert_equals("Stringify: Error\n", $obj->stringify);
+    $self->assert_equals("Stringify: Error\n", $obj->to_string);
     $self->assert_not_null($obj->{defaults}->{verbosity});
     $obj->{defaults}->{verbosity} = Exception::System->ATTRS->{verbosity}->{default};
     $self->assert_equals(1, $obj->{verbosity} = 1);
-    $self->assert_equals("Stringify: Error\n", $obj->stringify);
+    $self->assert_equals("Stringify: Error\n", $obj->to_string);
 
     $self->assert_equals("Stringify: Error\n", "$obj");
 }
 
-sub test_numerify {
+sub test_to_number {
     my $self = shift;
 
     my $obj = Exception::System->new;
     $obj->{errno} = 123;    
 
-    $self->assert_num_equals(123, $obj->numerify);
+    $self->assert_num_equals(123, $obj->to_number);
     $self->assert_num_equals(123, 0+$obj);
-}
-
-sub test_try {
-    my $self = shift;
-
-    eval {
-        eval { 1; };
-        my $v1 = Exception::System->try(eval { 1; });
-        $self->assert_equals(1, $v1);
-        my $e1 = Exception::System->catch(my $obj1);
-        $self->assert_equals('', $e1);
-        $self->assert_null($obj1);
-
-        eval { 1; };
-        my $v2 = Exception::System->try(eval { die "Die 2\n"; });
-        $self->assert_null($v2);
-        my $e2 = Exception::System->catch(my $obj2);
-        $self->assert_equals(1, $e2);
-        $self->assert_not_null($obj2);
-        $self->assert($obj2->isa("Exception::System"), '$obj2->isa("Exception::System")');
-        $self->assert($obj2->isa("Exception::Base"), '$obj2->isa("Exception::Base")');
-        $self->assert_equals("Die 2", $obj2->{message});
-    };
-    die "$@" if $@;
 }
 
 1;

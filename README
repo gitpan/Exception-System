@@ -15,7 +15,7 @@ SYNOPSIS
         'Exception::File' => {
             isa => 'Exception::System',
             has => 'filename',
-            stringify_attributes => [ 'message', 'errstr', 'filename' ],
+            string_attributes => [ 'message', 'errstr', 'filename' ],
         };
 
       eval {

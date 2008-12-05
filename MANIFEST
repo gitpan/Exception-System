@@ -14,6 +14,5 @@ t/cover.sh
 t/pod.t
 t/pod_coverage.t
 t/profile_eval.pl
-t/profile_try.pl
 t/test.pl
 t/tlib/Exception/SystemTest.pm

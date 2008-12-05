@@ -40,29 +40,14 @@ BEGIN {
 
 {
     package My::ExceptionEval;
-    use Exception::Base ':all', 'Exception::My';
+    use Exception::Base 'Exception::My';
     sub test {
         eval {
             Exception::My->throw(message=>'Message') if My::Common::throw_something;
         };
         if ($@) {
 	    my $e = Exception::Base->catch;
-            if ($e->isa('Exception::My') and $e->with('Message')) {
-                1;
-            }
-        }
-    }
-}
-
-{
-    package My::ExceptionTry;
-    use Exception::Base ':all', 'Exception::My';
-    sub test {
-        try eval {
-            Exception::My->throw(message=>'Message') if My::Common::throw_something;
-        };
-        if (catch my $e) {
-            if ($e->isa('Exception::My') and $e->with('Message')) {
+            if ($e->isa('Exception::My') and $e->matches('Message')) {
                 1;
             }
         }
@@ -71,29 +56,14 @@ BEGIN {
 
 {
     package My::ExceptionSystemEval;
-    use Exception::Base ':all', 'Exception::System';
+    use Exception::Base 'Exception::System';
     sub test {
         eval {
             Exception::System->throw(message=>'Message') if My::Common::throw_something;
         };
         if ($@) {
 	    my $e = Exception::Base->catch;
-            if ($e->isa('Exception::System') and $e->with('Message')) {
-                1;
-            }
-        }
-    }
-}
-
-{
-    package My::ExceptionSystemTry;
-    use Exception::Base ':all', 'Exception::System';
-    sub test {
-        try eval {
-            Exception::System->throw(message=>'Message') if My::Common::throw_something;
-        };
-        if (catch my $e) {
-            if ($e->isa('Exception::System') and $e->with('Message')) {
+            if ($e->isa('Exception::System') and $e->matches('Message')) {
                 1;
             }
         }
@@ -102,29 +72,14 @@ BEGIN {
 
 {
     package My::Exception1Eval;
-    use Exception::Base ':all', 'Exception::My';
+    use Exception::Base 'Exception::My';
     sub test {
         eval {
             Exception::My->throw(message=>'Message', verbosity=>1) if My::Common::throw_something;
         };
         if ($@) {
 	    my $e = Exception::Base->catch;
-            if ($e->isa('Exception::My') and $e->with('Message')) {
-                1;
-            }
-        }
-    }
-}
-
-{
-    package My::Exception1Try;
-    use Exception::Base ':all', 'Exception::My';
-    sub test {
-        try eval {
-            Exception::My->throw(message=>'Message', verbosity=>1) if My::Common::throw_something;
-        };
-        if (catch my $e) {
-            if ($e->isa('Exception::My') and $e->with('Message')) {
+            if ($e->isa('Exception::My') and $e->matches('Message')) {
                 1;
             }
         }
@@ -133,29 +88,14 @@ BEGIN {
 
 {
     package My::ExceptionSystem1Eval;
-    use Exception::Base ':all', 'Exception::System';
+    use Exception::Base 'Exception::System';
     sub test {
         eval {
             Exception::System->throw(message=>'Message', verbosity=>1) if My::Common::throw_something;
         };
         if ($@) {
 	    my $e = Exception::Base->catch;
-            if ($e->isa('Exception::System') and $e->with('Message')) {
-                1;
-            }
-        }
-    }
-}
-
-{
-    package My::ExceptionSystem1Try;
-    use Exception::Base ':all', 'Exception::System';
-    sub test {
-        try eval {
-            Exception::System->throw(message=>'Message', verbosity=>1) if My::Common::throw_something;
-        };
-        if (catch my $e) {
-            if ($e->isa('Exception::System') and $e->with('Message')) {
+            if ($e->isa('Exception::System') and $e->matches('Message')) {
                 1;
             }
         }
@@ -204,20 +144,13 @@ my %tests = (
     '01_EvalDieScalar'             => sub { My::EvalDieScalar->test },
     '02_EvalDieObject'             => sub { My::EvalDieObject->test },
     '03_ExceptionEval'             => sub { My::ExceptionEval->test },
-    '04_ExceptionTry'              => sub { My::ExceptionTry->test },
-    '05_ExceptionSystemEval'       => sub { My::ExceptionSystemEval->test },
-    '06_ExceptionSystemTry'        => sub { My::ExceptionSystemTry->test },
-    '07_Exception1Eval'            => sub { My::Exception1Eval->test },
-    '08_Exception1Try'             => sub { My::Exception1Try->test },
-    '09_ExceptionSystem1Eval'      => sub { My::ExceptionSystem1Eval->test },
-    '10_ExceptionSystem1Try'       => sub { My::ExceptionSystem1Try->test },
+    '04_ExceptionSystemEval'       => sub { My::ExceptionSystemEval->test },
+    '05_Exception1Eval'            => sub { My::Exception1Eval->test },
+    '06_ExceptionSystem1Eval'      => sub { My::ExceptionSystem1Eval->test },
 );
-$tests{'11_Error'}                  = sub { My::Error->test }                if eval { Error->VERSION };
-$tests{'12_ErrorSystem'}            = sub { My::ErrorSystem->test }          if eval { Error::SystemException->can('new') };
+$tests{'07_Error'}                  = sub { My::Error->test }                if eval { Error->VERSION };
+$tests{'08_ErrorSystem'}            = sub { My::ErrorSystem->test }          if eval { Error::SystemException->can('new') };
 
 print "Benchmark for ", (My::Common::throw_something ? "FAIL" : "OK"), "\n";
-#foreach (keys %tests) {
-#    printf "%s = %d\n", $_, $tests{$_}->();
-#}
 my $result = timethese($ARGV[0] || -1, { %tests });
 cmpthese($result);

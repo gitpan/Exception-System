@@ -2,7 +2,7 @@
 
 package Exception::System;
 use 5.006;
-our $VERSION = 0.10_01;
+our $VERSION = 0.11;
 
 =head1 NAME
 
@@ -23,7 +23,7 @@ Exception::System - The exception class for system or library calls
     'Exception::File' => {
         isa => 'Exception::System',
         has => 'filename',
-        stringify_attributes => [ 'message', 'errstr', 'filename' ],
+        string_attributes => [ 'message', 'errstr', 'filename' ],
     };
 
   eval {
@@ -56,25 +56,18 @@ use warnings;
 
 
 # Extend Exception::Base class
-use Exception::Base 0.19;
-use base 'Exception::Base';
+use Exception::Base 0.20
+    'Exception::System' => {
+        has       => { ro => [ 'errstr', 'errstros', 'errno', 'errname' ] },
+        message   => 'Unknown system exception',
+        verbosity => 3,
+        string_attributes => [ 'message', 'errstr' ],
+        numeric_attribute => 'errno',
+    };
 
 
 # Use ERRNO hash
 use Errno ();
-
-
-# List of class attributes (name => {is=>ro|rw, default=>value})
-use constant ATTRS => {
-    %{ Exception::Base->ATTRS },     # SUPER::ATTRS
-    stringify_attributes => { default => [ 'message', 'errstr' ] },
-    numeric_attribute    => { default => 'errno' },
-    message  => { is => 'rw', default => 'Unknown system exception' },
-    errstr   => { is => 'ro' },
-    errstros => { is => 'ro' },
-    errno    => { is => 'ro' },
-    errname  => { is => 'ro' },
-};
 
 
 # Map for errno -> errname (choose the shortest errname string for the same errno number)
@@ -94,16 +87,7 @@ sub _collect_system_data {
     $self->{errname}  = $Errname{ $self->{errno} } || '';
 
     return $self->SUPER::_collect_system_data(@_);
-}
-
-
-# Module initialization
-sub __init {
-    __PACKAGE__->_make_accessors;
-}
-
-
-__init;
+};
 
 
 1;
@@ -124,7 +108,7 @@ __END__
  +errno : Int
  +errname : Str
  #numeric_attribute : Str = "strno"
- #stringify_attributes : ArrayRef[Str] = ["message", "errstr"]
+ #string_attributes : ArrayRef[Str] = ["message", "errstr"]
  -------------------------------------------------------------
  #_collect_system_data()
  <<constant>> +ATTRS() : HashRef                              ]
@@ -170,7 +154,7 @@ from L<Exception::Base> class.
 =item errstr (ro)
 
 Contains the system error string fetched at exception throw.  It is the part
-of the string representing the exception object.  It is the same as B<$!>
+of the string representing the exception object.  It is the same as C<$!>
 variable in string context.
 
   eval { Exception::System->throw( message=>"Message" ) };
@@ -180,7 +164,7 @@ variable in string context.
 =item errstros (ro)
 
 Contains the extended system error string fetched at exception throw.  It is
-the same as B<$^E> variable.
+the same as C<$^E> variable.
 
   eval { Exception::System->throw( message=>"Message" ); };
   if ($@) {
@@ -193,7 +177,7 @@ the same as B<$^E> variable.
 =item errno (ro)
 
 Contains the system error number fetched at exception throw.  It is the same
-as B<$!> variable in numeric context.  This attribute represents numeric value
+as C<$!> variable in numeric context.  This attribute represents numeric value
 of the exception object in numeric context.
 
   use Errno ();
@@ -217,7 +201,7 @@ Contains the system error constant from the system F<error.h> include file.
     and $e->errname eq 'ENOENT'
     and $e->throw;
 
-=item stringify_attributes (default: ['message', 'errstr'])
+=item string_attributes (default: ['message', 'errstr'])
 
 Meta-attribute contains the format of string representation of exception
 object.  This class overrides the default value from L<Exception::Base>

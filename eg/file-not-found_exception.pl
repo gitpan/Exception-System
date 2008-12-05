@@ -9,7 +9,7 @@ use Exception::Base
     'Exception::FileNotFound' => {
 	isa => 'Exception::IO',
 	has => 'filename',
-	stringify_attributes => [ 'message', 'errstr', 'filename' ],
+	string_attributes => [ 'message', 'errstr', 'filename' ],
     };
 
 sub func1 {
